@@ -1,74 +1,209 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  ThemeMode _themeMode = ThemeMode.dark;
+  Locale _locale = Locale('en');
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        primaryColor: Colors.pink.shade400,
-        dividerColor: Colors.white,
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color.fromARGB(255, 30, 30, 30),
-        textTheme: const TextTheme(),
-        appBarTheme: const AppBarTheme(backgroundColor: Colors.black),
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: _locale,
+      theme: _themeMode == ThemeMode.dark
+          ? MyAppThemeConfig.dark().getTheme(_locale.languageCode)
+          : MyAppThemeConfig.light().getTheme(_locale.languageCode),
+      home: MyHomePage(
+        toggleThemeMode: () {
+          setState(() {
+            if (_themeMode == ThemeMode.dark) {
+              _themeMode = ThemeMode.light;
+            } else {
+              _themeMode = ThemeMode.dark;
+            }
+          });
+        },
+        selectedLanguageChanged: (_Language newSelectedLanguagedByUser) {
+          setState(() {
+            _locale = newSelectedLanguagedByUser == _Language.en ? Locale('en') : Locale('fa');
+          });
+        },
       ),
-      home: const MyHomePage(),
     );
   }
 }
 
+class MyAppThemeConfig {
+  static const String faPrimaryFontFamily = "IranSans";
+  final Color  primaryColor = Colors.pink.shade400;
+  final Color primaryTextColor;
+  final Color secondaryTextColor;
+  final Color surfaceColor;
+  final Color backgroundColor;
+  final Color appBarColor;
+  final Brightness brightness;
+
+  MyAppThemeConfig.dark():
+        primaryTextColor = Colors.white,
+        secondaryTextColor = Colors.white70,
+        surfaceColor = const Color(0x0dffffff),
+        backgroundColor = const Color.fromARGB(255, 30, 30, 30),
+        appBarColor = Colors.black,
+        brightness = Brightness.dark;
+
+  MyAppThemeConfig.light():
+        primaryTextColor = Colors.grey.shade900,
+        secondaryTextColor = Colors.grey.shade900.withOpacity(0.8),
+        surfaceColor = const Color(0x0d000000),
+        backgroundColor = Colors.white,
+        appBarColor = const Color.fromARGB(255, 235, 235, 235),
+        brightness = Brightness.light;
+
+  ThemeData getTheme(String languageCode) {
+    return ThemeData(
+      primarySwatch: Colors.pink,
+      primaryColor: primaryColor,
+      brightness: brightness,
+      dividerColor: Colors.white,
+      scaffoldBackgroundColor: backgroundColor,
+      appBarTheme: AppBarTheme(
+          elevation: 0,
+          backgroundColor: appBarColor,
+          foregroundColor: primaryTextColor
+      ),
+      textTheme: languageCode == 'en' ? enPrimaryTextTheme : faPrimaryTextTheme,
+      inputDecorationTheme: const InputDecorationTheme(
+        labelStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
+        border: OutlineInputBorder(
+          // borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide.none,
+        ),
+        filled: true,
+        // fillColor: surfaceColor,
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ButtonStyle(
+            backgroundColor: WidgetStateProperty.all(Colors.pink.shade400),
+            shape: WidgetStateProperty.all(RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(4),
+            ))),
+      ),
+    );
+  }
+
+  	TextTheme get enPrimaryTextTheme => TextTheme(
+		bodyLarge: TextStyle(fontSize: 15, color: primaryTextColor),
+		bodyMedium: TextStyle(fontSize: 13, color: secondaryTextColor),
+		titleLarge: TextStyle(
+			fontWeight: FontWeight.bold,
+			color: primaryTextColor
+		),
+		titleMedium: TextStyle(
+			fontSize: 16,
+  			fontWeight: FontWeight.bold,
+  			color: primaryTextColor
+  		),
+  	);
+
+
+	TextTheme get faPrimaryTextTheme => TextTheme(
+    bodyLarge: TextStyle(
+      fontSize: 15,
+      color: primaryTextColor,
+      fontFamily: faPrimaryFontFamily
+    ),
+    bodyMedium: TextStyle(
+        fontSize: 13,
+        color: secondaryTextColor,
+        fontFamily: faPrimaryFontFamily
+    ),
+    titleLarge: TextStyle(
+        fontWeight: FontWeight.bold,
+        color: primaryTextColor,
+        fontFamily: faPrimaryFontFamily
+    ),
+    titleMedium: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.bold,
+        color: primaryTextColor,
+        fontFamily: faPrimaryFontFamily
+    ),
+    labelLarge: TextStyle(fontFamily: faPrimaryFontFamily)
+  );
+
+
+}
+
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+  final Function() toggleThemeMode;
+  final Function(_Language _language) selectedLanguageChanged;
+
+  const MyHomePage({super.key, required this.toggleThemeMode, required this.selectedLanguageChanged});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-enum _SkillType {
-  photoshop,
-  xd,
-  illustrator,
-  affterEffect,
-  lightRoom
-}
-
 class _MyHomePageState extends State<MyHomePage> {
-
   _SkillType _skill = _SkillType.photoshop;
-  void updateSelectedSkill(_SkillType skillType) {
+  _Language _language = _Language.en;
+
+  void _updateSelectedSkill(_SkillType skillType) {
     setState(() {
       _skill = skillType;
     });
   }
 
+  void _updateSelectedLanguage(_Language language) {
+    widget.selectedLanguageChanged(language);
+    setState(() {
+      _language = language;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Profile'),
-          actions: const [
-            Icon(CupertinoIcons.chat_bubble),
-            SizedBox(
+          title: Text(localizations.profileTitle),
+          actions: [
+            const Icon(CupertinoIcons.chat_bubble),
+            const SizedBox(
               width: 8,
             ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(8, 0, 16, 0),
-              child: Icon(CupertinoIcons.ellipsis_vertical),
+            InkWell(
+              onTap: widget.toggleThemeMode,
+              child: const Padding(
+                padding: EdgeInsets.fromLTRB(8, 0, 16, 0),
+                child: Icon(CupertinoIcons.ellipsis_vertical),
+              ),
             ),
           ],
         ),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        body: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Padding(
               padding: const EdgeInsets.all(30),
               child: Row(
@@ -83,62 +218,85 @@ class _MyHomePageState extends State<MyHomePage> {
                   const SizedBox(
                     width: 16,
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('MrMrProgrammer'),
-                        SizedBox(
+                        Text(localizations.name),
+                        const SizedBox(
                           height: 2,
                         ),
-                        Text('Backend Developer'),
-                        SizedBox(
+                        Text(localizations.job),
+                        const SizedBox(
                           height: 4,
                         ),
                         Row(
                           children: [
-                            Icon(CupertinoIcons.location_solid, size: 14,),
-                            Text('Tehran, Iran'),
+                            const Icon(
+                              CupertinoIcons.location_solid,
+                              size: 14,
+                            ),
+                            Text(localizations.location),
                           ],
                         )
                       ],
                     ),
                   ),
-                  Icon(CupertinoIcons.heart, color: Theme.of(context).primaryColor,),
+                  Icon(
+                    CupertinoIcons.heart,
+                    color: Theme.of(context).primaryColor,
+                  ),
                 ],
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(30, 0, 30, 16),
-              child: Text(
-                "My Name is Mohammadreza. I'm 24 years old and I'm Python Developer. I'm currently work on Bijak."
+            Padding(
+              padding: const EdgeInsets.fromLTRB(30, 0, 30, 16),
+              child: Text(localizations.summary),
+            ),
+            const Divider(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(30, 12, 30, 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(localizations.selectedLanguage),
+                  CupertinoSlidingSegmentedControl<_Language>(
+                    groupValue: _language,
+                      thumbColor: Theme.of(context).primaryColor,
+                      children: {
+                        _Language.en: Text(localizations.enLanguage, style: TextStyle(fontSize: 12),),
+                        _Language.fa: Text(localizations.faLanguage, style: TextStyle(fontSize: 12),),
+                      },
+                      onValueChanged: (value) => {
+                        if (value != null) _updateSelectedLanguage(value)
+                      })
+                ],
               ),
             ),
             const Divider(),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(30, 16, 30, 12),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(30, 16, 30, 12),
               child: Row(
                 children: [
                   Text(
-                    'Skills',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold
-                    ),
+                    localizations.skills,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(width: 2,),
-                  Icon(
+                  const SizedBox(
+                    width: 2,
+                  ),
+                  const Icon(
                     CupertinoIcons.chevron_down,
                     size: 10,
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 10,),
             Center(
               child: Wrap(
                 direction: Axis.horizontal,
-                spacing: 8,
-                runSpacing: 8,
+                spacing: 12,
+                runSpacing: 12,
                 children: [
                   Skill(
                     type: _SkillType.photoshop,
@@ -147,7 +305,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     shadowColor: Colors.blue,
                     isActive: _skill == _SkillType.photoshop,
                     onTap: () {
-                      updateSelectedSkill(_SkillType.photoshop);
+                      _updateSelectedSkill(_SkillType.photoshop);
                     },
                   ),
                   Skill(
@@ -157,7 +315,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     shadowColor: Colors.pink,
                     isActive: _skill == _SkillType.xd,
                     onTap: () {
-                      updateSelectedSkill(_SkillType.xd);
+                      _updateSelectedSkill(_SkillType.xd);
                     },
                   ),
                   Skill(
@@ -167,7 +325,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     shadowColor: Colors.orange,
                     isActive: _skill == _SkillType.illustrator,
                     onTap: () {
-                      updateSelectedSkill(_SkillType.illustrator);
+                      _updateSelectedSkill(_SkillType.illustrator);
                     },
                   ),
                   Skill(
@@ -177,7 +335,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     shadowColor: Colors.blue,
                     isActive: _skill == _SkillType.affterEffect,
                     onTap: () {
-                      updateSelectedSkill(_SkillType.affterEffect);
+                      _updateSelectedSkill(_SkillType.affterEffect);
                     },
                   ),
                   Skill(
@@ -187,14 +345,47 @@ class _MyHomePageState extends State<MyHomePage> {
                     shadowColor: Colors.blue,
                     isActive: _skill == _SkillType.lightRoom,
                     onTap: () {
-                      updateSelectedSkill(_SkillType.lightRoom);
+                      _updateSelectedSkill(_SkillType.lightRoom);
                     },
                   ),
-
+                ],
+              ),
+            ),
+            const Divider(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(30, 12, 30, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(localizations.personalInformation,
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  TextField(
+                      decoration: InputDecoration(
+                          labelText: localizations.email,
+                          prefixIcon: Icon(CupertinoIcons.at))),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  TextField(
+                      decoration: InputDecoration(
+                          labelText: localizations.password,
+                          prefixIcon: Icon(CupertinoIcons.at))),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child:
+                        ElevatedButton(onPressed: () {}, child: Text(localizations.save)),
+                  )
                 ],
               ),
             )
-          ],
+          ]),
         ));
   }
 }
@@ -226,32 +417,40 @@ class Skill extends StatelessWidget {
       child: Container(
         width: 110,
         height: 110,
-        decoration: isActive ? BoxDecoration(
-            color: const Color(0x0dffffff),
-            borderRadius: defaultBorderRadius
-        ) : null,
+        decoration: isActive
+            ? BoxDecoration(
+                color: const Color(0x0dffffff),
+                borderRadius: defaultBorderRadius)
+            : null,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              decoration: isActive ? BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                      color: shadowColor,
-                      blurRadius: 20
-                  ),
-                ]) : null,
+              decoration: isActive
+                  ? BoxDecoration(boxShadow: [
+                      BoxShadow(color: shadowColor, blurRadius: 20),
+                    ])
+                  : null,
               child: Image.asset(
                 imagePath,
                 width: 40,
                 height: 40,
               ),
             ),
-            const SizedBox(height: 8,),
+            const SizedBox(
+              height: 8,
+            ),
             Text(title),
           ],
         ),
       ),
     );
   }
+}
+
+enum _SkillType { photoshop, xd, illustrator, affterEffect, lightRoom }
+
+enum _Language {
+  en,
+  fa
 }
