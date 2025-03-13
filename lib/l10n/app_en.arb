@@ -1,0 +1,15 @@
+{
+    "profileTitle": "Profile",
+    "name": "Seyed Mohammadreza Hashemi",
+    "job": "Python Developer",
+    "location": "Tehran, Iran",
+    "summary": "I am a 24-year-old Python developer and data engineer currently working at Bijak, a leading logistics platform.",
+    "selectedLanguage": "Selected Language",
+    "enLanguage": "English",
+    "faLanguage": "Farsi",
+    "skills": "Skills",
+    "personalInformation": "Personal Information",
+    "email": "Email",
+    "password": "Password",
+    "save": "Save"
+}
