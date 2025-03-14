@@ -187,15 +187,19 @@ class _MyHomePageState extends State<MyHomePage> {
         appBar: AppBar(
           title: Text(localizations.profileTitle),
           actions: [
-            const Icon(CupertinoIcons.chat_bubble),
+            // const Icon(CupertinoIcons.chat_bubble),
             const SizedBox(
               width: 8,
             ),
-            InkWell(
-              onTap: widget.toggleThemeMode,
-              child: const Padding(
-                padding: EdgeInsets.fromLTRB(8, 0, 16, 0),
-                child: Icon(CupertinoIcons.ellipsis_vertical),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
+              child: InkWell(
+                onTap: widget.toggleThemeMode,
+                child: Icon(
+                  Theme.of(context).brightness == Brightness.dark
+                      ? CupertinoIcons.sun_max
+                      : CupertinoIcons.moon,
+                ),
               ),
             ),
           ],
